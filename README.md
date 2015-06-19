@@ -54,3 +54,7 @@ babel.transform(code, {
 * This currently relies on the module name exactly matching the `jsxPragma` value.
 
 * This should be implemented by inserting an `import` declaration to load the module, but due to an issue with babel ([babel/babel#1777](https://github.com/babel/babel/issues/1777)) that's not currently possible and therefore it inserts a `require()` call and only works for CommonJS output.
+
+* Currently only supports `jsxPragma` value that is a valid identifier. E.g. `some.thing` or `some['thing']` would not work.
+
+* Currently does not take into account when a file actually contains a JSX pragma comment.
