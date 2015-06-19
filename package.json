@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-jsx-pragmatic",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "jsx-pragmatic.js",
   "license": "MIT",
   "author": "Jesse McCarthy (http://software.jessemccarthy.net/)",
