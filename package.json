@@ -1,0 +1,26 @@
+{
+  "name": "babel-plugin-jsx-pragmatic",
+  "version": "0.1.0",
+  "main": "jsx-pragmatic.js",
+  "license": "MIT",
+  "author": "Jesse McCarthy (http://software.jessemccarthy.net/)",
+  "homepage": "https://github.com/jmm/babel-plugin-jsx-pragmatic",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jmm/babel-plugin-jsx-pragmatic"
+  },
+  "devDependencies": {
+    "babel-core": "^5.0.0"
+  },
+  "files": [
+    "jsx-pragmatic.js",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "babel-plugin",
+    "jsx",
+    "react"
+  ]
+}
