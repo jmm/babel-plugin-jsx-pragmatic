@@ -84,7 +84,7 @@ module.exports = function jsxPragmatic (babel) {
     JSXElement: function (node, parent, scope, file) {
       file.set('jsxDetected', true);
     },
-    // CallExpression
+    // JSXElement
   };
 
   return new babel.Transformer("jsx-pragmatic", transforms);
