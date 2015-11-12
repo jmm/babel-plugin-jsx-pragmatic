@@ -28,5 +28,8 @@
     "babel-plugin",
     "jsx",
     "react"
-  ]
+  ],
+  "scripts": {
+    "test": "mocha 'test/{unit,integration}.js'"
+  }
 }
