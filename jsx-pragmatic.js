@@ -1,92 +1,61 @@
 /**
- * Insert code to load the module corresponding to `jsxPragma`.
- * Supposed to be implemented via `import` declaration but blocked by
- * https://github.com/babel/babel/issues/1777
- * So currently implemented via `require()` and only for CommonJS.
+ * Insert code to load a module when JSX is detected.
+ * This is supposed to load a module corresponding to the `pragma` option of
+ * the JSX transform.
  */
 
 module.exports = function jsxPragmatic (babel) {
   var
     t = babel.types,
-    // Node representing import declaration.
-    pragmaImport,
-    transforms = {};
+    visitor = {};
 
-  /**
-   * Retrieve or generate `pragmaImport`.
-   * This method should be unnecessary, but currently unaware of a way to
-   * access options passed to babel in this scope (as opposed to visitor func).
-   */
-  function getPragmaImport (opts) {
-    pragmaImport = pragmaImport ||
-
-        // This shouldn't be necessary, see babel/babel#1777
-        t.variableDeclaration(
-          'var',
-          [t.variableDeclarator(
-            t.identifier(opts.jsxPragma),
-            t.callExpression(
-              t.identifier('require'), [
-                t.literal(opts.jsxPragma)
-              ]
-            )
-          )]
-        )
-
-        ||
-
-        t.importDeclaration(
-          [t.importDefaultSpecifier(t.identifier(opts.jsxPragma))],
-          t.literal(opts.jsxPragma)
-        );
-
-    return pragmaImport;
+  function getPragmaImport (state) {
+    return t.importDeclaration(
+      [t.importSpecifier(
+        t.identifier(state.opts.import),
+        t.identifier(state.opts.export || "default")
+      )],
+      t.stringLiteral(state.opts.module)
+    );
   }
+  // getPragmaImport
 
-  transforms = {
+  visitor = {
     Program: {
-      // This whole thing should be unnecessary. See babel/babel#1777.
-      enter: function (program, parent, scope, file) {
-        file.set(
-          'eligible',
-          ['common', 'commonStrict'].indexOf(file.opts.modules) >= 0
-        );
+      enter: function (path, state) {
+        // TODO
+        // When I can figure out how to access these options in pre(), move this
+        // validation there.
+        if (! (state.opts.module && state.opts.import)) {
+          throw new Error("babel-plugin-jsx-pragmatic: You must specify `module` and `import`");
+        }
       },
       // enter
 
-      exit: function (program, parent, scope, file) {
-        var
-          first = program.body[0],
-          pragmaImport;
+      exit: function (path, state) {
+        if (! state.get('jsxDetected')) return;
 
-        if (! (file.get('eligible') && file.get('jsxDetected'))) return;
-
-        pragmaImport = getPragmaImport(this.state.opts);
-
-        // Detect whether program begins with `use strict` directive, to insert
-        // module load code in proper location.
-        if (
-          t.isExpressionStatement(first) &&
-          // TODO: This is a flawed check, but currently the same one babel
-          // itself uses. I could check `node.raw`, but note that it is not yet
-          // standardized in ESTree.
-          t.isLiteral(first.expression, { value: "use strict" })
-        ) {
-          // Or this.get("body.0").
-          this.get("body")[0].insertAfter(pragmaImport);
-        }
-        else this.unshiftContainer('body', pragmaImport);
+        // Apparently it's now safe to do this even if Program begins with
+        // directives.
+        path.unshiftContainer('body', getPragmaImport(state));
       },
       // exit
     },
     // Program
 
-    JSXElement: function (node, parent, scope, file) {
-      file.set('jsxDetected', true);
+    // It seems pretty hokey that this'll work even if JSX has already been
+    // transformed, but apparently that's the basis for the whole plugin
+    // architecture for babel@6, so I'm rolling with it and maybe it'll make
+    // more sense to me once I understand it better.
+    JSXElement: function (path, state) {
+      state.set('jsxDetected', true);
     },
     // JSXElement
   };
 
-  return new babel.Transformer("jsx-pragmatic", transforms);
+  return {
+    inherits: require("babel-plugin-syntax-jsx"),
+    visitor: visitor,
+  };
 };
 // jsxPragmatic

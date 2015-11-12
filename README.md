@@ -1,8 +1,8 @@
 # About
 
-babel / babelify has a `jsxPragma` option that will be used when transforming JSX to function calls instead of the default function `React.createElement`.
+[babel-plugin-transform-react-jsx](https://www.npmjs.com/package/babel-plugin-transform-react-jsx) has a `pragma` option that's used when transforming JSX to function calls instead of the default function `React.createElement`.
 
-This babel plugin is a companion to that feature that allows you to dynamically load a module associated with the `jsxPragma` value.
+This Babel plugin is a companion to that feature that allows you to dynamically load a module associated with the `pragma` value.
 
 Example:
 
@@ -18,11 +18,15 @@ babel would normally transform the JSX to:
 React.createElement(Some, { jsx: "element" });
 ```
 
-By setting the `jsxPragma` option like this:
+By setting the `pragma` option like this:
 
 ```js
 babel.transform(code, {
-  jsxPragma: 'whatever',
+  plugins: [
+    ["babel-plugin-transform-react-jsx", {
+      pragma: "whatever",
+    }],
+  ]
 })
 ```
 
@@ -32,29 +36,109 @@ It would instead transform it to:
 whatever(Some, { jsx: "element" });
 ```
 
-However, you would still likely need to pull in a module corresponding to `whatever`:
+However, you might need to load a module corresponding to `whatever` in each module containing JSX:
 
 ```js
-import whatever from 'whatever';
+import whatever from "whatever";
 // or
-var whatever = require('whatever');
+var whatever = require("whatever");
 ```
 
 This plugin allows you to make that part dynamic as well:
 
 ```js
 babel.transform(code, {
-  jsxPragma: 'whatever',
-  plugins: ['babel-plugin-jsx-pragmatic'],
+  plugins: [
+    ["babel-plugin-transform-react-jsx", {
+      pragma: "whatever",
+    }],
+
+    ["babel-plugin-jsx-pragmatic", {
+      module: "/something/whatever",
+      import: "whatever"
+    }],
+  ]
 })
+```
+
+Results in:
+
+```js
+import {default as whatever} from "/something/whatever";
+```
+
+## Options
+
+### `module`
+
+String. Module ID or pathname. The value of the `ModuleSpecifier` of an import. Required.
+
+### `import`
+
+String. The identifier that you want to import the `module` with. This should correspond to the root identifier of the `pragma` value. Required. Examples:
+
+```js
+{
+  plugins: [
+    ["babel-plugin-transform-react-jsx", {
+      pragma: "x",
+    }],
+
+    ["babel-plugin-jsx-pragmatic", {
+      module: "/something/whatever",
+      import: "x"
+    }],
+  ]
+}
+
+{
+  plugins: [
+    ["babel-plugin-transform-react-jsx", {
+      pragma: "x.y",
+    }],
+
+    ["babel-plugin-jsx-pragmatic", {
+      module: "/something/whatever",
+      import: "x"
+    }],
+  ]
+}
+```
+
+### `export`
+
+String. The export that you want to import as `import` from `module`. Default value is `default` (the default export). Examples:
+
+```js
+// Will import the default export (`default`)
+{
+  module: "whatever",
+  import: "x"
+}
+// import {default as x} from "whatever"
+
+
+// Will import the default export (`default`)
+{
+  module: "whatever",
+  import: "x",
+  export: "default",
+}
+// import {default as x} from "whatever"
+
+
+// Will import the export named `something`
+{
+  module: "whatever",
+  import: "x",
+  export: "something",
+}
+// import {something as x} from "whatever"
 ```
 
 # Known Issues
 
-* This currently relies on the module name exactly matching the `jsxPragma` value.
+* Doesn't do anything special in the case that the file being transformed
+  already imports or declares an identifier with the same name as `import`.
 
-* This should be implemented by inserting an `import` declaration to load the module, but due to an issue with babel ([babel/babel#1777](https://github.com/babel/babel/issues/1777)) that's not currently possible and therefore it inserts a `require()` call and only works for CommonJS output.
-
-* Currently only supports `jsxPragma` value that is a valid identifier. E.g. `some.thing` or `some['thing']` would not work.
-
-* Currently does not take into account when a file actually contains a JSX pragma comment.
+* Doesn't take into account when a file actually contains a JSX pragma comment.
