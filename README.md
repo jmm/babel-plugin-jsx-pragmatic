@@ -4,6 +4,8 @@
 
 This Babel plugin is a companion to that feature that allows you to dynamically load a module associated with the `pragma` value.
 
+From v1.0.0 this works with the Babel v6 plugin API, not v5.
+
 Example:
 
 Given this file:
