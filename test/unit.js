@@ -37,8 +37,8 @@ describe("Plugin", function () {
     });
 
     it("Should work with required opts", function () {
-        assert.throws(function () {
-          jsxPragmatic().visitor.Program.enter(null, {
+        assert.doesNotThrow(function () {
+          jsxPragmatic({}).visitor.Program.enter(null, {
             opts: requiredOpts,
           });
         });
