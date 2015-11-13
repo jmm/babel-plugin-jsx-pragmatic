@@ -22,16 +22,6 @@ module.exports = function jsxPragmatic (babel) {
 
   visitor = {
     Program: {
-      enter: function (path, state) {
-        // TODO
-        // When I can figure out how to access these options in pre(), move this
-        // validation there.
-        if (! (state.opts.module && state.opts.import)) {
-          throw new Error("babel-plugin-jsx-pragmatic: You must specify `module` and `import`");
-        }
-      },
-      // enter
-
       exit: function (path, state) {
         if (! state.get('jsxDetected')) return;
 
@@ -54,6 +44,11 @@ module.exports = function jsxPragmatic (babel) {
   };
 
   return {
+    pre: function () {
+      if (! (this.opts.module && this.opts.import)) {
+        throw new Error("babel-plugin-jsx-pragmatic: You must specify `module` and `import`");
+      }
+    },
     inherits: require("babel-plugin-syntax-jsx"),
     visitor: visitor,
   };

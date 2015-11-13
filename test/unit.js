@@ -28,7 +28,8 @@ describe("Plugin", function () {
         delete currentOpts[opt];
 
         assert.throws(function () {
-          jsxPragmatic().visitor.Program.enter(null, {
+          // TODO see if there's a better way to test this.
+          jsxPragmatic({}).pre.call({
             opts: currentOpts,
           });
         });
@@ -38,7 +39,7 @@ describe("Plugin", function () {
 
     it("Should work with required opts", function () {
         assert.doesNotThrow(function () {
-          jsxPragmatic({}).visitor.Program.enter(null, {
+          jsxPragmatic({}).pre.call({
             opts: requiredOpts,
           });
         });
